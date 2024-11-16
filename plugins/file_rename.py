@@ -165,23 +165,17 @@ async def rename_callback(bot, query):
                 progress_args=("Uᴩʟᴏᴅ Sᴛᴀʀᴛᴇᴅ....", sts, time.time())
             )
 
- except Exception as e:          
-         try: 
-    os.remove(file_path)
-    if ph_path:  # Ensure ph_path is not None before trying to remove it
+   except Exception as e:          
+        try: 
+            os.remove(file_path)
+            os.remove(ph_path)
+            return await sts.edit(f" Eʀʀᴏʀ {e}")
+        except: pass
+        
+    try: 
+        os.remove(file_path)
         os.remove(ph_path)
-    await sts.edit(f" Eʀʀᴏʀ {e}")
-except Exception as cleanup_error:
-    print(f"Cleanup error: {cleanup_error}")
-
-# If you want to ensure cleanup happens regardless of previous errors
-try: 
-    os.remove(file_path)
-    if ph_path:  # Ensure ph_path is not None before trying to remove it
-        os.remove(ph_path)
-    await sts.delete()
-except Exception as cleanup_error:
-    print(f"Final cleanup error: {cleanup_error}")
+        await sts.delete()
     except: pass
 
 
