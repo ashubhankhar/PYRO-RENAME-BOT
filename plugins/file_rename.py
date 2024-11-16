@@ -88,21 +88,29 @@ async def rename_selection(client, message):
 @Client.on_callback_query(filters.regex("upload"))
 async def rename_callback(bot, query): 
     user_id = query.from_user.id
-    file_name = query.message.text.split(":-")[1]
+    
+    # Split the message text and check the length
+    parts = query.message.text.split(":-")
+    if len(parts) < 2:
+        return await query.answer("Error: Invalid message format. Please try again.")
+
+    file_name = parts[1].strip()  # Use strip() to remove any leading/trailing whitespace
     file_path = f"downloads/{user_id}{time.time()}/{file_name}"
     file = query.message.reply_to_message
 
     sts = await query.message.edit("Tʀyɪɴɢ Tᴏ Dᴏᴡɴʟᴏᴀᴅɪɴɢ....")    
     try:
-     	path = await file.download(file_name=file_path, progress=progress_for_pyrogram,progress_args=("Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....", sts, time.time()))                    
+        path = await file.download(file_name=file_path, progress=progress_for_pyrogram, progress_args=("Dᴏᴡɴʟᴏᴀᴅ Sᴛᴀʀᴛᴇᴅ....", sts, time.time()))                    
     except Exception as e:
-     	return await sts.edit(e)
+        return await sts.edit(str(e))
+    
     duration = 0
     try:
         metadata = extractMetadata(createParser(file_path))
-        if metadata.has("duration"): duration = metadata.get('duration').seconds
-    except:
-        pass
+        if metadata.has("duration"): 
+            duration = metadata.get('duration').seconds
+    except Exception as e:
+        print(f"Metadata extraction error: {e}")
     
     ph_path = None
     media = getattr(file, file.media.value)
@@ -159,6 +167,13 @@ async def rename_callback(bot, query):
     except Exception as e:          
         try: 
             os.remove(file_path)
+            os.remove(ph_path)
+            return await sts.edit(f" Eʀʀᴏʀ {e}")
+        except Exception as cleanup_error:
+            print(f"Cleanup error: {cleanup_error}")
+        
+    try: 
+        os.remove(file_path)
             os.remove(ph_path)
             return await sts.edit(f" Eʀʀᴏʀ {e}")
         except: pass
