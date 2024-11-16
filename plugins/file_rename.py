@@ -52,7 +52,18 @@ async def rename_selection(client, message):
     await message.delete() 
     msg = await client.get_messages(message.chat.id, reply_message.id)
     file = msg.reply_to_message
+
+    if file is None:
+        return await message.reply_text("Error: No media found in the reply message.")
+
+    # Check if the media attribute exists
+    if not hasattr(file, 'media') or file.media is None:
+        return await message.reply_text("Error: Media attribute is missing.")
+
     media = getattr(file, file.media.value)
+    if media is None:
+        return await message.reply_text("Error: Media is None.")
+
     if not "." in new_name:
         if "." in media.file_name:
             extn = media.file_name.rsplit('.', 1)[-1]
@@ -61,13 +72,14 @@ async def rename_selection(client, message):
         new_name = new_name + "." + extn
     await reply_message.delete()
 
-    button = [[InlineKeyboardButton("📁 Dᴏᴄᴜᴍᴇɴᴛ",callback_data = "upload_document")]]
+    button = [[InlineKeyboardButton("📁 Dᴏᴄᴜᴍᴇɴᴛ", callback_data="upload_document")]]
     if file.media in [MessageMediaType.VIDEO, MessageMediaType.DOCUMENT]:
-        button.append([InlineKeyboardButton("🎥 Vɪᴅᴇᴏ", callback_data = "upload_video")])
+        button.append([InlineKeyboardButton("🎥 Vɪᴅᴇᴏ", callback_data="upload_video")])
     elif file.media == MessageMediaType.AUDIO:
-        button.append([InlineKeyboardButton("🎵 Aᴜᴅɪᴏ", callback_data = "upload_audio")])
+        button.append([InlineKeyboardButton("🎵 Aᴜᴅɪᴏ", callback_data="upload_audio")])
+    
     await message.reply(
-        text=f"**Sᴇʟᴇᴄᴛ Tʜᴇ Oᴜᴛᴩᴜᴛ Fɪʟᴇ Tyᴩᴇ**\n**• Fɪʟᴇ Nᴀᴍᴇ :-**```{str(new_name)}```",
+        text=f"**Sᴇʟᴇᴄᴛ Tʜᴇ Oᴜᴛᴘᴜᴛ Fɪʟᴇ Tyᴩᴇ**\n**• Fɪʟᴇ Nᴀᴍᴇ :-**```{str(new_name)}```",
         reply_to_message_id=file.id,
         reply_markup=InlineKeyboardMarkup(button)
     )
